@@ -1,4 +1,4 @@
-package orm
+package durazzo
 
 import (
 	"errors"
@@ -20,7 +20,7 @@ func (d *Durazzo) AutoMigrate(model interface{}) error {
 	for i := 0; i < modelType.Elem().NumField(); i++ {
 		field := modelType.Elem().Field(i)
 		column := strings.ToLower(field.Name)
-		tag := field.Tag.Get("orm")
+		tag := field.Tag.Get("durazzo")
 		sqlType := "TEXT"
 
 		if tag == "primary_key" {

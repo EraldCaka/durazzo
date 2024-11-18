@@ -1,34 +1,65 @@
 package main
 
 import (
-	"fmt"
-	"github.com/EraldCaka/durazzo/pkg/orm"
+	"github.com/EraldCaka/durazzo/pkg/durazzo"
 
 	"log"
 )
 
 func main() {
 
-	dbType := orm.Postgres
-	config := orm.Config{
+	dbType := durazzo.Postgres
+	config := durazzo.Config{
 		Driver: dbType,
 		DSN:    "postgresql://postgres:1234@localhost:5432/keeper?sslmode=disable",
 	}
 
 	type User struct {
-		ID    int    `orm:"primary_key"`
-		Name  string `orm:"size:100"`
-		Email string `orm:"unique"`
+		ID    int    `durazzo:"primary_key"`
+		Name  string `durazzo:"size:100"`
+		Email string `durazzo:"unique"`
 	}
 
-	durazzo := orm.NewDurazzo(config)
+	newDurazzo := durazzo.NewDurazzo(config)
 
-	var users []*User
-	err := durazzo.Select(users).Run()
+	err := newDurazzo.AutoMigrate(&User{})
 	if err != nil {
+		log.Fatalf("Error creating table: %v", err)
+	}
+
+	log.Println("ptr user")
+	var userPtr User
+	if err := newDurazzo.Select(&userPtr).Where("name", "erald2").Run(); err != nil {
 		log.Fatalf("Error executing query: %v", err)
 	}
 
-	fmt.Println(users) // TODO : FIX THIS ISSUE
+	log.Println(userPtr)
+
+	var users []User
+	if err := newDurazzo.Select(&users).Run(); err != nil {
+		log.Fatalf("Error executing query: %v", err)
+	}
+
+	for _, user := range users {
+		log.Println(user)
+	}
+
+	log.Println("users ptr")
+	var users1 []*User
+	if err := newDurazzo.Select(&users1).Run(); err != nil {
+		log.Fatalf("Error executing query: %v", err)
+	}
+
+	for _, user := range users1 {
+		log.Println(user)
+	}
+
+	log.Println("user")
+	var user User
+	if err := newDurazzo.Select(&user).Run(); err != nil {
+		log.Fatalf("Error executing query: %v", err)
+	}
+
+	log.Println(user)
 
 }

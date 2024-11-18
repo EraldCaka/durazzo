@@ -1,4 +1,4 @@
-package orm
+package durazzo
 
 var (
 	Sqlite   = "sqlite"

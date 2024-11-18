@@ -1,14 +1,11 @@
-package orm
+package durazzo
 
 import (
 	"database/sql"
 )
 
 type Durazzo struct {
-	db         *sql.DB
-	conditions []string
-	args       []interface{}
-	limit      int
+	db *sql.DB
 }
 
 // NewDurazzo creates a Durazzo instance
