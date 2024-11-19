@@ -3,7 +3,7 @@ package durazzo
 import (
 	"database/sql"
 
-	_ "github.com/lib/pq" // PostgreSQL driver
+	_ "github.com/lib/pq"
 )
 
 func initPostgres(dsn string) (*sql.DB, error) {

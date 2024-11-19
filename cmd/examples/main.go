@@ -19,24 +19,31 @@ func main() {
 		Name  string `durazzo:"size:100"`
 		Email string `durazzo:"unique"`
 	}
+	type Product struct {
+		ID    int    `durazzo:"primary_key"`
+		Name  string `durazzo:"unique size:100"`
+		Price int
+	}
 
 	newDurazzo := durazzo.NewDurazzo(config)
 
-	err := newDurazzo.AutoMigrate(&User{})
+	err := newDurazzo.AutoMigrate(&User{}, &Product{})
 	if err != nil {
 		log.Fatalf("Error creating table: %v", err)
 	}
 
-	log.Println("ptr user")
 	var userPtr User
-	if err := newDurazzo.Select(&userPtr).Where("name", "erald2").Run(); err != nil {
+
+	if err := newDurazzo.Select(&userPtr).
+		Where("name", "erald").
+		Run(); err != nil {
 		log.Fatalf("Error executing query: %v", err)
 	}
 
 	log.Println(userPtr)
 
 	var users []User
-	if err := newDurazzo.Select(&users).Run(); err != nil {
+	if err := newDurazzo.Select(&users).Where("name", "kris").Run(); err != nil {
 		log.Fatalf("Error executing query: %v", err)
 	}
 
@@ -44,9 +51,8 @@ func main() {
 		log.Println(user)
 	}
 
-	log.Println("users ptr")
 	var users1 []*User
-	if err := newDurazzo.Select(&users1).Run(); err != nil {
+	if err := newDurazzo.Select(&users1).Limit(1).Run(); err != nil {
 		log.Fatalf("Error executing query: %v", err)
 	}
 
@@ -54,8 +60,7 @@ func main() {
 		log.Println(user)
 	}
 
-	log.Println("user")
-	var user User
+	var user *User
 	if err := newDurazzo.Select(&user).Run(); err != nil {
 		log.Fatalf("Error executing query: %v", err)
 	}
