@@ -8,9 +8,8 @@ import (
 
 func main() {
 
-	dbType := durazzo.Postgres
 	config := durazzo.Config{
-		Driver: dbType,
+		Driver: durazzo.Postgres,
 		DSN:    "postgresql://postgres:1234@localhost:5432/keeper?sslmode=disable",
 	}
 
@@ -26,7 +25,12 @@ func main() {
 	}
 
 	newDurazzo := durazzo.NewDurazzo(config)
-
+	defer func(newDurazzo *durazzo.Durazzo) {
+		err := newDurazzo.Close()
+		if err != nil {
+			log.Fatalf("Error closing Durazzo:%v", err)
+		}
+	}(newDurazzo)
 	err := newDurazzo.AutoMigrate(&User{}, &Product{})
 	if err != nil {
 		log.Fatalf("Error creating table: %v", err)

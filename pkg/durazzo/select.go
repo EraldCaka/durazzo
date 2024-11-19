@@ -92,7 +92,7 @@ func (st *SelectType) Run() error {
 		return err
 	}
 
-	rows, err := st.Durazzo.db.Query(query, st.args...)
+	rows, err := st.Durazzo.Db.Query(query, st.args...)
 	if err != nil {
 		return err
 	}
@@ -117,7 +117,8 @@ func mapRowsToModel(rows *sql.Rows, model interface{}, modelType reflect.Type, i
 
 	if targetValue.Kind() == reflect.Struct || (targetValue.Kind() == reflect.Ptr && targetValue.Elem().Kind() == reflect.Struct) || (targetValue.Kind() == reflect.Ptr && targetValue.Elem().Kind() == reflect.Invalid) {
 		if !rows.Next() {
-			return errors.New("no rows found")
+			log.Println(errors.New("no rows found"))
+			return nil
 		}
 		if targetValue.Kind() == reflect.Ptr {
 

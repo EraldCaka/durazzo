@@ -40,7 +40,7 @@ func (d *Durazzo) AutoMigrate(models ...interface{}) error {
 			strings.Join(columns, ", "),
 		)
 
-		_, err := d.db.Exec(createQuery)
+		_, err := d.Db.Exec(createQuery)
 		if err != nil {
 			return fmt.Errorf("failed to create table for model %v: %w", tableName, err)
 		}

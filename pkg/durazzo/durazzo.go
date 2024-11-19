@@ -5,13 +5,17 @@ import (
 )
 
 type Durazzo struct {
-	db *sql.DB
+	Db *sql.DB
 }
 
 // NewDurazzo creates a Durazzo instance
 func NewDurazzo(config Config) *Durazzo {
-	db := NewConnection(config)
+	db := newConnection(config)
 	return &Durazzo{
-		db: db,
+		Db: db,
 	}
+}
+
+func (d *Durazzo) Close() error {
+	return d.Db.Close()
 }

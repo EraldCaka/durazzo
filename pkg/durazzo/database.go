@@ -11,7 +11,7 @@ type Config struct {
 	DSN    string
 }
 
-func NewConnection(config Config) *sql.DB {
+func newConnection(config Config) *sql.DB {
 	var db *sql.DB
 	var err error
 
