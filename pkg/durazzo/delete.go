@@ -38,5 +38,6 @@ func (dt *DeleteType) Run() error {
 
 	query := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, dt.tableName, strings.Join(dt.conditions, " AND "))
 	_, err := dt.Durazzo.Db.Exec(query, dt.args...)
+	
 	return err
 }

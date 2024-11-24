@@ -1,16 +1,13 @@
 package durazzo_test
 
 import (
-	"github.com/EraldCaka/durazzo/pkg/durazzo"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func TestDurazzo_Select_All(t *testing.T) {
-	newDurazzo := durazzo.NewDurazzo(durazzo.Config{
-		Driver: durazzo.Postgres,
-		DSN:    "postgresql://postgres:postgres@localhost:5432/testdb?sslmode=disable",
-	})
+
+	newDurazzo := setupDatabase(t)
 
 	type User struct {
 		ID    int    `durazzo:"primary_key"`
@@ -41,16 +38,13 @@ func TestDurazzo_Select_All(t *testing.T) {
 	assert.Equal(t, "kris", users[2].Name)
 	assert.Equal(t, "kris@yahoo.com", users[2].Email)
 
-	dropTableQuery := `DROP TABLE IF EXISTS "user"`
-	_, err = newDurazzo.Db.Exec(dropTableQuery)
+	tearDownDatabase(t, newDurazzo)
 	assert.Nil(t, err)
 }
 
 func TestDurazzo_Select_limit(t *testing.T) {
-	newDurazzo := durazzo.NewDurazzo(durazzo.Config{
-		Driver: durazzo.Postgres,
-		DSN:    "postgresql://postgres:postgres@localhost:5432/testdb?sslmode=disable",
-	})
+
+	newDurazzo := setupDatabase(t)
 
 	type User struct {
 		ID    int    `durazzo:"primary_key"`
@@ -86,10 +80,7 @@ func TestDurazzo_Select_limit(t *testing.T) {
 }
 
 func TestDurazzo_Select_Where(t *testing.T) {
-	newDurazzo := durazzo.NewDurazzo(durazzo.Config{
-		Driver: durazzo.Postgres,
-		DSN:    "postgresql://postgres:postgres@localhost:5432/testdb?sslmode=disable",
-	})
+	newDurazzo := setupDatabase(t)
 
 	type User struct {
 		ID    int    `durazzo:"primary_key"`
@@ -99,15 +90,18 @@ func TestDurazzo_Select_Where(t *testing.T) {
 
 	err := newDurazzo.AutoMigrate(&User{})
 	assert.Nil(t, err)
-
-	insertQuery := `INSERT INTO "user" (name, email) VALUES ($1, $2)`
-	_, err = newDurazzo.Db.Exec(insertQuery, "edgar", "edgar@gmail.com")
+	userBody := User{ID: 1, Name: "edgar", Email: "edgar@gmail.com"}
+	err = newDurazzo.Insert(&userBody).Run()
 	assert.Nil(t, err)
 
-	_, err = newDurazzo.Db.Exec(insertQuery, "ermelinda", "ermelinda@gmail.com")
+	userBody1 := User{ID: 2, Name: "ermelinda", Email: "ermelinda@gmail.com"}
+	err = newDurazzo.Insert(&userBody1).Run()
 	assert.Nil(t, err)
-	_, err = newDurazzo.Db.Exec(insertQuery, "kris", "kris@yahoo.com")
+
+	userBody2 := User{ID: 3, Name: "kris", Email: "kris@yahoo.com"}
+	err = newDurazzo.Insert(&userBody2).Run()
 	assert.Nil(t, err)
+
 	var users []User
 	err = newDurazzo.Select(&users).Where("name", "kris").Run()
 	assert.Nil(t, err)
@@ -116,7 +110,5 @@ func TestDurazzo_Select_Where(t *testing.T) {
 	assert.Equal(t, "kris", users[0].Name)
 	assert.Equal(t, "kris@yahoo.com", users[0].Email)
 
-	dropTableQuery := `DROP TABLE IF EXISTS "user"`
-	_, err = newDurazzo.Db.Exec(dropTableQuery)
-	assert.Nil(t, err)
+	tearDownDatabase(t, newDurazzo)
 }

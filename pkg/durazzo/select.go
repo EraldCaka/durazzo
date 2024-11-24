@@ -1,6 +1,7 @@
 package durazzo
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"github.com/EraldCaka/durazzo/pkg/util"
@@ -55,7 +56,7 @@ func (d *Durazzo) Select(model interface{}) *SelectType {
 	modelType, tableName, isPointer, err := util.ResolveModelInfo(model)
 
 	if err != nil {
-		log.Fatalf("failed to initialize SelectType: %v", err)
+		d.log.Error("failed to initialize SelectType: ", err)
 	}
 
 	return &SelectType{
@@ -96,12 +97,18 @@ func (st *SelectType) Run() error {
 	if err != nil {
 		return err
 	}
-	defer rows.Close()
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			st.log.Error("an error occurred with the queried rows: ", err)
+
+		}
+	}(rows)
 
 	err = util.MapRowsToModel(rows, st.model, st.modelType, st.isPointer)
 
 	elapsedTime := time.Since(startTime)
-	log.Printf("Query : %s took %v to run\n", query, elapsedTime)
+	log.Printf("Query : %s took %v to run\n\n", query, elapsedTime)
 
 	return err
 }

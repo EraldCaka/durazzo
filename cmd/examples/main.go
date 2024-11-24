@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/EraldCaka/durazzo/pkg/durazzo"
+	"os"
 
 	"log"
 )
@@ -10,7 +11,7 @@ func main() {
 
 	config := durazzo.Config{
 		Driver: durazzo.Postgres,
-		DSN:    "postgresql://postgres:postgres@localhost:5432/testdb?sslmode=disable",
+		DSN:    os.Getenv("DATABASE_URL"),
 	}
 
 	type User struct {
@@ -26,7 +27,8 @@ func main() {
 
 	newDurazzo := durazzo.NewDurazzo(config)
 	defer func(newDurazzo *durazzo.Durazzo) {
-		err := newDurazzo.Close()
+		err := newDurazzo.Delete("user").Where("id", "1").Run()
+		err = newDurazzo.Close()
 		if err != nil {
 			log.Fatalf("Error closing Durazzo:%v", err)
 		}
@@ -48,7 +50,7 @@ func main() {
 		log.Fatalf("Error executing query: %v", err)
 	}
 
-	log.Println(user)
+	log.Println("initial user by select normal:", user)
 
 	if err := newDurazzo.Update("user").
 		Set("name", "kris").
@@ -65,23 +67,25 @@ func main() {
 		Run(); err != nil {
 		log.Fatalf("Error executing query: %v", err)
 	}
-
-	log.Println(userPtr)
+	log.Println("SECOND:", userPtr)
 
 	if err := newDurazzo.Delete("user").Where("id", "1").Run(); err != nil {
 		log.Fatalf("Error deleting user: %v", err)
 	}
-	//var users []User
-	//err = newDurazzo.Raw("SELECT * FROM user").
-	//	Model(&users).
-	//	Run()
-	//
-	//if err != nil {
-	//	log.Fatalf("Error executing raw query: %v", err)
-	//}
-	//
-	//for _, user := range users {
-	//	log.Printf("User: %+v", user)
-	//}
+	var users []User
+	err = newDurazzo.Raw("SELECT * FROM user WHERE name = $1", "kris").
+		Model(&users).
+		Run()
 
+	if err != nil {
+		log.Fatalf("Error executing raw query: %v", err)
+	}
+
+	for _, user := range users {
+		log.Printf("User: %+v", user)
+	}
+
+	//if err := newDurazzo.Delete("user").Where("id", "1").Run(); err != nil {
+	//	log.Fatalf("Error deleting user: %v", err)
+	//}
 }

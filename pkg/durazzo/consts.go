@@ -1,6 +1,6 @@
 package durazzo
 
-var (
+const (
 	Sqlite   = "sqlite"
 	Postgres = "postgres"
 	Mysql    = "mysql"

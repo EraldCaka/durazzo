@@ -1,16 +1,12 @@
 package durazzo_test
 
 import (
-	"github.com/EraldCaka/durazzo/pkg/durazzo"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func TestDurazzo_Insert(t *testing.T) {
-	newDurazzo := durazzo.NewDurazzo(durazzo.Config{
-		Driver: durazzo.Postgres,
-		DSN:    "postgresql://postgres:postgres@localhost:5432/testdb?sslmode=disable",
-	})
+	newDurazzo := setupDatabase(t)
 
 	type User struct {
 		ID    int    `durazzo:"primary_key"`
@@ -21,8 +17,8 @@ func TestDurazzo_Insert(t *testing.T) {
 	err := newDurazzo.AutoMigrate(&User{})
 	assert.Nil(t, err)
 
-	insertQuery := `INSERT INTO "user" (name, email) VALUES ($1, $2)`
-	_, err = newDurazzo.Db.Exec(insertQuery, "edgar", "edgar@gmail.com")
+	userBody2 := User{ID: 3, Name: "edgar", Email: "edgar@gmail.com"}
+	err = newDurazzo.Insert(&userBody2).Run()
 	assert.Nil(t, err)
 
 	var users []User
@@ -33,7 +29,5 @@ func TestDurazzo_Insert(t *testing.T) {
 	assert.Equal(t, "edgar", users[0].Name)
 	assert.Equal(t, "edgar@gmail.com", users[0].Email)
 
-	dropTableQuery := `DROP TABLE IF EXISTS "user"`
-	_, err = newDurazzo.Db.Exec(dropTableQuery)
-	assert.Nil(t, err)
+	tearDownDatabase(t, newDurazzo)
 }

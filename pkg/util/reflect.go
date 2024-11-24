@@ -54,7 +54,9 @@ func MapRowsToModel(rows *sql.Rows, model interface{}, modelType reflect.Type, i
 
 	targetValue := modelValue.Elem()
 
-	if targetValue.Kind() == reflect.Struct || (targetValue.Kind() == reflect.Ptr && targetValue.Elem().Kind() == reflect.Struct) || (targetValue.Kind() == reflect.Ptr && targetValue.Elem().Kind() == reflect.Invalid) {
+	if targetValue.Kind() == reflect.Struct ||
+		(targetValue.Kind() == reflect.Ptr && targetValue.Elem().Kind() == reflect.Struct) ||
+		(targetValue.Kind() == reflect.Ptr && targetValue.Elem().Kind() == reflect.Invalid) {
 		if !rows.Next() {
 			log.Println(errors.New("no rows found"))
 			return nil
@@ -99,10 +101,9 @@ func MapRowsToModel(rows *sql.Rows, model interface{}, modelType reflect.Type, i
 
 // ScanRow scans a single row into a struct or a pointer to a struct
 func ScanRow(rows *sql.Rows, targetValue reflect.Value) error {
-	// Ensure that the target is a pointer to a struct
 	if targetValue.Kind() == reflect.Ptr {
 		if targetValue.IsNil() {
-			targetValue.Set(reflect.New(targetValue.Type().Elem())) // Initialize if nil
+			targetValue.Set(reflect.New(targetValue.Type().Elem()))
 		}
 		targetValue = targetValue.Elem()
 	}
@@ -111,16 +112,15 @@ func ScanRow(rows *sql.Rows, targetValue reflect.Value) error {
 		return fmt.Errorf("targetValue must be a struct or a pointer to a struct, got %s", targetValue.Kind())
 	}
 
-	// Create a slice of pointers to the struct's fields
 	fieldPointers := make([]interface{}, targetValue.NumField())
 	for i := 0; i < targetValue.NumField(); i++ {
-		fieldPointers[i] = targetValue.Field(i).Addr().Interface() // Get pointers to fields
+		fieldPointers[i] = targetValue.Field(i).Addr().Interface()
 	}
 
 	return rows.Scan(fieldPointers...)
 }
 
-func MapRowsToSliceModel(rows *sql.Rows, model interface{}, modelType reflect.Type, isPointer bool) error {
+func MapRowsToSliceModel(rows *sql.Rows, model interface{}, modelType reflect.Type) error {
 	modelValue := reflect.ValueOf(model)
 	if modelValue.Kind() != reflect.Ptr {
 		return errors.New("model must be a pointer to a slice")
@@ -130,15 +130,11 @@ func MapRowsToSliceModel(rows *sql.Rows, model interface{}, modelType reflect.Ty
 	if targetValue.Kind() != reflect.Slice {
 		return fmt.Errorf("targetValue must be a slice, got %s", targetValue.Kind())
 	}
-
 	for rows.Next() {
-
 		elem := reflect.New(modelType)
-
 		if err := ScanRow(rows, elem.Elem()); err != nil {
 			return err
 		}
-		// Append the element to the slice
 		targetValue.Set(reflect.Append(targetValue, elem.Elem()))
 	}
 	return nil
