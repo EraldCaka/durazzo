@@ -56,7 +56,7 @@ func (d *Durazzo) Select(model interface{}) *SelectType {
 	modelType, tableName, isPointer, err := util.ResolveModelInfo(model)
 
 	if err != nil {
-		d.log.Error("failed to initialize SelectType: ", err)
+		log.Println("failed to initialize SelectType: ", err)
 	}
 
 	return &SelectType{
@@ -100,7 +100,7 @@ func (st *SelectType) Run() error {
 	defer func(rows *sql.Rows) {
 		err := rows.Close()
 		if err != nil {
-			st.log.Error("an error occurred with the queried rows: ", err)
+			log.Println("an error occurred with the queried rows: ", err)
 
 		}
 	}(rows)
