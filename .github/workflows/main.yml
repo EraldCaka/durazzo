@@ -1,0 +1,52 @@
+name: Go CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        go-version: [1.18, 1.19, 1.20]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ matrix.go-version }}
+
+      # Install dependencies
+      - name: Install dependencies
+        run: |
+          go mod tidy
+          go mod download
+
+      - name: Run tests
+        run: |
+          go test ./... -v -race
+
+      - name: Check code formatting
+        run: |
+          go fmt ./... || (echo "Code is not formatted!" && exit 1)
+
+      - name: Run linter
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: latest
+          args: |
+            run ./...
+
+      - name: Validate go.mod and go.sum
+        run: |
+          go mod tidy
+          git diff --exit-code go.mod go.sum
