@@ -33,3 +33,8 @@ jobs:
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/testdb?sslmode=disable
         run: make test
+
+      - name: Run main
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/testdb?sslmode=disable
+        run: make run

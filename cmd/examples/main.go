@@ -14,7 +14,7 @@ func main() {
 	}
 
 	type User struct {
-		ID    int    `durazzo:"primary_key"`
+		ID    int    `durazzo:"primary_key""`
 		Name  string `durazzo:"size:100"`
 		Email string `durazzo:"unique"`
 	}
@@ -36,39 +36,52 @@ func main() {
 		log.Fatalf("Error creating table: %v", err)
 	}
 
+	userBody := User{ID: 1, Name: "emir", Email: "emir@gmail.com"}
+	if err := newDurazzo.Insert(&userBody).Run(); err != nil {
+		log.Fatalf("Error inserting user: %v", err)
+	}
+	var user User
+
+	if err := newDurazzo.Select(&user).
+		Where("name", "emir").
+		Run(); err != nil {
+		log.Fatalf("Error executing query: %v", err)
+	}
+
+	log.Println(user)
+
+	if err := newDurazzo.Update("user").
+		Set("name", "kris").
+		Set("email", "kris@gmail.com").
+		Where("id", "1").
+		Run(); err != nil {
+		log.Fatalf("Error updating user: %v", err)
+	}
+
 	var userPtr User
 
 	if err := newDurazzo.Select(&userPtr).
-		Where("name", "erald").
+		Where("name", "kris").
 		Run(); err != nil {
 		log.Fatalf("Error executing query: %v", err)
 	}
 
 	log.Println(userPtr)
 
-	var users []User
-	if err := newDurazzo.Select(&users).Where("name", "kris").Run(); err != nil {
-		log.Fatalf("Error executing query: %v", err)
+	if err := newDurazzo.Delete("user").Where("id", "1").Run(); err != nil {
+		log.Fatalf("Error deleting user: %v", err)
 	}
-
-	for _, user := range users {
-		log.Println(user)
-	}
-
-	var users1 []*User
-	if err := newDurazzo.Select(&users1).Limit(1).Run(); err != nil {
-		log.Fatalf("Error executing query: %v", err)
-	}
-
-	for _, user := range users1 {
-		log.Println(user)
-	}
-
-	var user *User
-	if err := newDurazzo.Select(&user).Run(); err != nil {
-		log.Fatalf("Error executing query: %v", err)
-	}
-
-	log.Println(user)
+	//var users []User
+	//err = newDurazzo.Raw("SELECT * FROM user").
+	//	Model(&users).
+	//	Run()
+	//
+	//if err != nil {
+	//	log.Fatalf("Error executing raw query: %v", err)
+	//}
+	//
+	//for _, user := range users {
+	//	log.Printf("User: %+v", user)
+	//}
 
 }
