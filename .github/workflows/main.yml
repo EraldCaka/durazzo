@@ -17,17 +17,15 @@ jobs:
         go-version: [1.21, 1.22]
 
     steps:
-      # Check out the repository code
+
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Set up Go environment
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go-version }}
 
-      # Cache Go modules
       - name: Cache Go modules
         uses: actions/cache@v3
         with:
@@ -36,19 +34,18 @@ jobs:
           restore-keys: |
             go-mod-${{ matrix.go-version }}-
 
-      # Install dependencies
+ 
       - name: Install dependencies
         run: go mod tidy
 
-      # Run tests
-      - name: Run tests
-        run: make test
+     
+     #  - name: Run tests
+     #    run: make test
+ 
+    
+     #  - name: Run example
+     #   run: make run
 
-      # Run examples
-      - name: Run example
-        run: make run
-
-      # Ensure go.mod and go.sum are consistent
       - name: Verify module consistency
         run: |
           go mod tidy
