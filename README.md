@@ -81,7 +81,9 @@ Durazzo works by first setting up a connection to your database, and then intera
 
 Durazzo makes it easy to work with your database through interfaces or raw SQL queries. Here are the common operations:
 
+---
 ### Create
+
 
 To insert a new record:
 
@@ -89,8 +91,9 @@ To insert a new record:
     user := User{Name: "erald", Email: "erald@yahoo.com"}
     err := db.Insert(&user).Run()
 ```
-
+---
 ### Select
+
 
 Fetching records from the database:
 
@@ -98,15 +101,14 @@ Fetching records from the database:
     var users []User
     err := db.Select(&users).Where("email", "erald@yahoo.com").Run()
 ```
-
+---
 ### Update
 
 To update a record:
-
 ```go
     err := db.Update(&User{}).Set("email", "erald@gmail.com").Where("name", "erald").Run()
 ```
-
+---
 ### Delete
 
 To delete a record:
@@ -114,7 +116,7 @@ To delete a record:
 ```go
     err := db.Delete(&User{}).Where("name", "erald").Run()
 ```
-
+---
 ### Raw SQL Queries
 
 Durazzo allows you to execute raw SQL queries directly, for operations such as joins, complex selects, and more. 
