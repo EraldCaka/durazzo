@@ -19,7 +19,7 @@ Durazzo is a simple and efficient ORM library for Go that provides a powerful, f
 To install Durazzo, run the following Go command:
 
 ```bash
-  $ go get github.com/EraldCaka/durazzo/pkg/durazzo
+  $ go get github.com/EraldCaka/durazzo
 ```
 
 Once installed, you can begin using Durazzo in your Go projects to interact with databases easily.
@@ -72,7 +72,7 @@ Durazzo works by first setting up a connection to your database, and then intera
 
 ## CRUD Operations
 
-Durazzo makes it easy to work with your database through, interfaces or raw SQL queries. Here are the common operations:
+Durazzo makes it easy to work with your database through interfaces or raw SQL queries. Here are the common operations:
 
 ### Create
 
