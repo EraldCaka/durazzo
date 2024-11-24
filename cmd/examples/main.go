@@ -10,7 +10,7 @@ func main() {
 
 	config := durazzo.Config{
 		Driver: durazzo.Postgres,
-		DSN:    "postgresql://postgres:1234@localhost:5432/keeper?sslmode=disable",
+		DSN:    "postgresql://postgres:postgres@localhost:5432/testdb?sslmode=disable",
 	}
 
 	type User struct {

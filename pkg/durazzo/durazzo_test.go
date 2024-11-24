@@ -9,7 +9,7 @@ import (
 func TestDurazzo_AutoMigrate(t *testing.T) {
 	newDurazzo := durazzo.NewDurazzo(durazzo.Config{
 		Driver: durazzo.Postgres,
-		DSN:    "postgresql://postgres:1234@localhost:5432/keeper?sslmode=disable",
+		DSN:    "postgresql://postgres:postgres@localhost:5432/testdb?sslmode=disable",
 	})
 	type User struct {
 		ID    int    `durazzo:"primary_key"`

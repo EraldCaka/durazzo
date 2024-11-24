@@ -1,4 +1,4 @@
-name: CI Pipeline
+name: CI with Docker Compose
 
 on:
   push:
@@ -9,29 +9,27 @@ on:
       - main
 
 jobs:
-  build-and-test:
+  test:
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        go-version: [1.21, 1.22]
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: ${{ matrix.go-version }}
+      - name: Install Docker Compose
+        run: sudo apt-get install -y docker-compose
 
-      - name: Cache Go modules
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/go-build
-          key: go-mod-${{ matrix.go-version }}-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            go-mod-${{ matrix.go-version }}-
+      - name: Start Services
+        run: docker-compose up -d
 
-      - name: Install dependencies
-        run: go mod tidy
+      - name: Wait for Database
+        run: |
+          echo "Waiting for the database to be ready..."
+          until docker exec your_postgres_container pg_isready -U postgres; do
+            sleep 1
+          done
+
+      - name: Run Tests
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/testdb?sslmode=disable
+        run: make test

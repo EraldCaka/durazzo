@@ -9,7 +9,7 @@ import (
 func TestDurazzo_Select_All(t *testing.T) {
 	newDurazzo := durazzo.NewDurazzo(durazzo.Config{
 		Driver: durazzo.Postgres,
-		DSN:    "postgresql://postgres:1234@localhost:5432/keeper?sslmode=disable",
+		DSN:    "postgresql://postgres:postgres@localhost:5432/testdb?sslmode=disable",
 	})
 
 	type User struct {
@@ -49,7 +49,7 @@ func TestDurazzo_Select_All(t *testing.T) {
 func TestDurazzo_Select_limit(t *testing.T) {
 	newDurazzo := durazzo.NewDurazzo(durazzo.Config{
 		Driver: durazzo.Postgres,
-		DSN:    "postgresql://postgres:1234@localhost:5432/keeper?sslmode=disable",
+		DSN:    "postgresql://postgres:postgres@localhost:5432/testdb?sslmode=disable",
 	})
 
 	type User struct {
@@ -88,7 +88,7 @@ func TestDurazzo_Select_limit(t *testing.T) {
 func TestDurazzo_Select_Where(t *testing.T) {
 	newDurazzo := durazzo.NewDurazzo(durazzo.Config{
 		Driver: durazzo.Postgres,
-		DSN:    "postgresql://postgres:1234@localhost:5432/keeper?sslmode=disable",
+		DSN:    "postgresql://postgres:postgres@localhost:5432/testdb?sslmode=disable",
 	})
 
 	type User struct {
