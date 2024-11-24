@@ -69,9 +69,6 @@ func main() {
 	}
 	log.Println("SECOND:", userPtr)
 
-	if err := newDurazzo.Delete("user").Where("id", "1").Run(); err != nil {
-		log.Fatalf("Error deleting user: %v", err)
-	}
 	var users []User
 	err = newDurazzo.Raw("SELECT * FROM user WHERE name = $1", "kris").
 		Model(&users).
@@ -84,8 +81,8 @@ func main() {
 	for _, user := range users {
 		log.Printf("User: %+v", user)
 	}
+	if err := newDurazzo.Delete("user").Where("id", "1").Run(); err != nil {
+		log.Fatalf("Error deleting user: %v", err)
+	}
 
-	//if err := newDurazzo.Delete("user").Where("id", "1").Run(); err != nil {
-	//	log.Fatalf("Error deleting user: %v", err)
-	//}
 }
