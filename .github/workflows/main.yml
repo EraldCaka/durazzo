@@ -1,4 +1,4 @@
-name: CI with Docker Compose
+name: Go package
 
 on:
   push:

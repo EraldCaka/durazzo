@@ -1,9 +1,8 @@
 [![GoDoc](https://pkg.go.dev/badge/github.com/EraldCaka/durazzo)](https://pkg.go.dev/github.com/EraldCaka/durazzo)
 [![GitHub Stars](https://img.shields.io/github/stars/EraldCaka/durazzo)](https://github.com/EraldCaka/durazzo/stargazers)
-[![GitHub Forks](https://img.shields.io/github/forks/EraldCaka/durazzo)](https://github.com/EraldCaka/durazzo/network/members)
-[![GitHub License](https://img.shields.io/github/license/EraldCaka/durazzo)](https://opensource.org/licenses/MIT)
 [![GitHub Issues](https://img.shields.io/github/issues/EraldCaka/durazzo)](https://github.com/EraldCaka/durazzo/issues)
-
+[![Go Report Card](https://goreportcard.com/badge/github.com/EraldCaka/durazzo)](https://goreportcard.com/report/github.com/EraldCaka/durazzo)
+![example workflow](https://github.com/EraldCaka/durazzo/actions/workflows/main.yml/badge.svg?branch=main)
 # Durazzo ORM
 
 Durazzo is a simple and efficient ORM library for Go that provides a powerful, flexible, and easy-to-use interface for interacting with relational databases using raw SQL queries and model-based migrations. Still under development new features will come up soon.
