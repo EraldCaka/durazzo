@@ -20,6 +20,7 @@ type Post struct {
 
 func TestRaw_Insert(t *testing.T) {
 	newDurazzo := setupDatabase(t)
+	defer tearDownDatabase(t, newDurazzo)
 
 	insertQuery := `INSERT INTO user (name, email) VALUES ($1, $2)`
 	err := newDurazzo.Raw(insertQuery, "edgar", "edgar@gmail.com").Run()
@@ -35,12 +36,11 @@ func TestRaw_Insert(t *testing.T) {
 	assert.Equal(t, 2, len(users))
 	assert.Equal(t, "edgar", users[0].Name)
 	assert.Equal(t, "ermelinda", users[1].Name)
-
-	tearDownDatabase(t, newDurazzo)
 }
 
 func TestRaw_Select(t *testing.T) {
 	newDurazzo := setupDatabase(t)
+	defer tearDownDatabase(t, newDurazzo)
 
 	err := newDurazzo.Raw(`INSERT INTO user (name, email) VALUES ($1, $2)`, "edgar", "edgar@gmail.com").Run()
 	assert.Nil(t, err)
@@ -50,16 +50,14 @@ func TestRaw_Select(t *testing.T) {
 	var users []User
 	err = newDurazzo.Raw("SELECT * FROM user").Model(&users).Run()
 	assert.Nil(t, err)
-
 	assert.Equal(t, 2, len(users))
 	assert.Equal(t, "edgar", users[0].Name)
 	assert.Equal(t, "ermelinda", users[1].Name)
-
-	tearDownDatabase(t, newDurazzo)
 }
 
 func TestRaw_Update(t *testing.T) {
 	newDurazzo := setupDatabase(t)
+	defer tearDownDatabase(t, newDurazzo)
 
 	err := newDurazzo.Raw(`INSERT INTO user (name, email) VALUES ($1, $2)`, "edgar", "edgar@gmail.com").Run()
 	assert.Nil(t, err)
@@ -71,15 +69,13 @@ func TestRaw_Update(t *testing.T) {
 	var users []User
 	err = newDurazzo.Raw("SELECT * FROM user WHERE name = $1", "edgar").Model(&users).Run()
 	assert.Nil(t, err)
-
 	assert.Equal(t, 1, len(users))
 	assert.Equal(t, "edgar.updated@gmail.com", users[0].Email)
-
-	tearDownDatabase(t, newDurazzo)
 }
 
 func TestRaw_Delete(t *testing.T) {
 	newDurazzo := setupDatabase(t)
+	defer tearDownDatabase(t, newDurazzo)
 
 	err := newDurazzo.Raw(`INSERT INTO user (name, email) VALUES ($1, $2)`, "edgar", "edgar@gmail.com").Run()
 	assert.Nil(t, err)
@@ -96,12 +92,11 @@ func TestRaw_Delete(t *testing.T) {
 
 	assert.Equal(t, 1, len(users))
 	assert.Equal(t, "ermelinda", users[0].Name)
-
-	tearDownDatabase(t, newDurazzo)
 }
 
 func TestRaw_ComplexQueries(t *testing.T) {
 	newDurazzo := setupDatabase(t)
+	defer tearDownDatabase(t, newDurazzo)
 
 	err := newDurazzo.Raw(`INSERT INTO user (name, email) VALUES ($1, $2)`, "edgar", "edgar@gmail.com").Run()
 	assert.Nil(t, err)
@@ -125,12 +120,11 @@ func TestRaw_ComplexQueries(t *testing.T) {
 	assert.Equal(t, "edgar", users1[0].Name)
 	assert.Equal(t, "ermelinda", users1[1].Name)
 
-	tearDownDatabase(t, newDurazzo)
 }
 
 func TestRaw_AggregateFunctions(t *testing.T) {
 	newDurazzo := setupDatabase(t)
-
+	defer tearDownDatabase(t, newDurazzo)
 	err := newDurazzo.Raw(`INSERT INTO user (name, email) VALUES ($1, $2)`, "edgar", "edgar@gmail.com").Run()
 	assert.Nil(t, err)
 	err = newDurazzo.Raw(`INSERT INTO user (name, email) VALUES ($1, $2)`, "ermelinda", "ermelinda@gmail.com").Run()
@@ -138,33 +132,26 @@ func TestRaw_AggregateFunctions(t *testing.T) {
 	err = newDurazzo.Raw(`INSERT INTO user (name, email) VALUES ($1, $2)`, "kris", "kris@yahoo.com").Run()
 	assert.Nil(t, err)
 
-	// Raw COUNT query
-
 	var count int
 	err = newDurazzo.Raw(`SELECT COUNT(*) FROM user WHERE email LIKE $1`, "%@gmail.com").Model(&count).Run()
 	assert.Nil(t, err)
 	assert.Equal(t, 2, count)
 
-	// Raw AVG query (example)
-	//var avgAge float64
-	//err = newDurazzo.Raw(`SELECT AVG(age) FROM user`).Model(&avgAge).Run()
-	//assert.Nil(t, err)
-	//
-	//assert.Equal(t, 0.0, avgAge)
-
-	tearDownDatabase(t, newDurazzo)
+	var avgAge float64
+	err = newDurazzo.Raw(`SELECT AVG(id) FROM user`).Model(&avgAge).Run()
+	assert.Nil(t, err)
+	assert.Equal(t, 2.0, avgAge)
 }
 
 func TestRaw_ComplexJoinQuery(t *testing.T) {
 	newDurazzo := setupDatabase(t)
+	defer tearDownDatabase(t, newDurazzo)
 
-	// Insert user data
 	err := newDurazzo.Raw(`INSERT INTO user (name, email) VALUES ($1, $2)`, "edgar", "edgar@gmail.com").Run()
 	assert.Nil(t, err)
 	err = newDurazzo.Raw(`INSERT INTO user (name, email) VALUES ($1, $2)`, "ermelinda", "ermelinda@gmail.com").Run()
 	assert.Nil(t, err)
 
-	// Insert post data
 	err = newDurazzo.Raw(`INSERT INTO post (title, body, userid) VALUES ($1, $2, $3)`, "Post 1", "Body of post 1", 1).Run()
 	assert.Nil(t, err)
 	err = newDurazzo.Raw(`INSERT INTO post (title, body, userid) VALUES ($1, $2, $3)`, "Post 2", "Body of post 2", 2).Run()
@@ -189,6 +176,4 @@ func TestRaw_ComplexJoinQuery(t *testing.T) {
 	assert.Equal(t, "Post 2", results[0].PostTitle)
 	assert.Equal(t, "edgar", results[1].UserName)
 	assert.Equal(t, "Post 1", results[1].PostTitle)
-
-	tearDownDatabase(t, newDurazzo)
 }

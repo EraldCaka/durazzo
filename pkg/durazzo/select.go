@@ -51,7 +51,7 @@ func (qb *SQLQueryBuilder) BuildSelectQuery(tableName string, conditions []strin
 }
 
 // Select initializes a SELECT operation from Durazzo it receives a pointer of an interface
-// MUST be a pointer
+// MUST be a pointer of a type
 func (d *Durazzo) Select(model interface{}) *SelectType {
 	modelType, tableName, isPointer, err := util.ResolveModelInfo(model)
 
@@ -72,7 +72,7 @@ func (d *Durazzo) Select(model interface{}) *SelectType {
 	}
 }
 
-// Where adds a condition to the query (e.g., "fieldname = ?")
+// Where adds a where condition inside the query
 func (st *SelectType) Where(field, value string) *SelectType {
 	st.conditions = append(st.conditions, fmt.Sprintf(`%s = $%d`, field, len(st.args)+1))
 	st.args = append(st.args, value)
@@ -85,30 +85,37 @@ func (st *SelectType) Limit(limit int) *SelectType {
 	return st
 }
 
+// Run executes the query asynchronously using a dedicated channel
 func (st *SelectType) Run() error {
-	startTime := time.Now()
+	resultChan := make(chan error, 1)
+	go func() {
+		startTime := time.Now()
 
-	query, err := st.queryBuilder.BuildSelectQuery(st.tableName, st.conditions, st.limit)
-	if err != nil {
-		return err
-	}
-
-	rows, err := st.Durazzo.Db.Query(query, st.args...)
-	if err != nil {
-		return err
-	}
-	defer func(rows *sql.Rows) {
-		err := rows.Close()
+		query, err := st.queryBuilder.BuildSelectQuery(st.tableName, st.conditions, st.limit)
 		if err != nil {
-			log.Println("an error occurred with the queried rows: ", err)
-
+			resultChan <- err
+			close(resultChan)
+			return
 		}
-	}(rows)
 
-	err = util.MapRowsToModel(rows, st.model, st.modelType, st.isPointer)
+		rows, err := st.Durazzo.Db.Query(query, st.args...)
+		if err != nil {
+			resultChan <- err
+			close(resultChan)
+			return
+		}
+		defer func(rows *sql.Rows) {
+			if err := rows.Close(); err != nil {
+				log.Println("an error occurred with the queried rows:", err)
+			}
+		}(rows)
 
-	elapsedTime := time.Since(startTime)
-	log.Printf("Query : %s took %v to run\n\n", query, elapsedTime)
+		err = util.MapRowsToModel(rows, st.model, st.modelType, st.isPointer)
+		elapsedTime := time.Since(startTime)
+		log.Printf("Query : %s took %v to run\n\n", query, elapsedTime)
 
-	return err
+		resultChan <- err
+		close(resultChan)
+	}()
+	return <-resultChan
 }

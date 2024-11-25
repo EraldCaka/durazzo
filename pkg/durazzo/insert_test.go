@@ -7,6 +7,7 @@ import (
 
 func TestDurazzo_Insert(t *testing.T) {
 	newDurazzo := setupDatabase(t)
+	defer tearDownDatabase(t, newDurazzo)
 
 	type User struct {
 		ID    int    `durazzo:"primary_key"`
@@ -28,6 +29,4 @@ func TestDurazzo_Insert(t *testing.T) {
 	assert.Equal(t, 1, len(users))
 	assert.Equal(t, "edgar", users[0].Name)
 	assert.Equal(t, "edgar@gmail.com", users[0].Email)
-
-	tearDownDatabase(t, newDurazzo)
 }
