@@ -17,6 +17,11 @@ func ResolveModelInfo(model interface{}) (reflect.Type, string, bool, error) {
 
 	switch {
 	case modelType.Kind() == reflect.Ptr:
+		if isPrimitiveType(modelType.Elem().Kind()) {
+			tableName = strings.ToLower(modelType.Elem().Name())
+			modelType = modelType.Elem()
+			return modelType, tableName, isPointer, nil
+		}
 		if modelType.Elem().Kind() == reflect.Struct {
 
 			tableName = strings.ToLower(modelType.Elem().Name())
@@ -38,6 +43,9 @@ func ResolveModelInfo(model interface{}) (reflect.Type, string, bool, error) {
 			tableName = strings.ToLower(modelType.Elem().Name())
 			modelType = modelType.Elem()
 		}
+	case modelType.Kind() == reflect.Struct:
+		tableName = strings.ToLower(modelType.Name())
+
 	default:
 		return nil, "", false, fmt.Errorf("unsupported model type: %s", modelType.Kind())
 	}
@@ -53,6 +61,31 @@ func MapRowsToModel(rows *sql.Rows, model interface{}, modelType reflect.Type, i
 	}
 
 	targetValue := modelValue.Elem()
+
+	if isPrimitiveType(targetValue.Kind()) || (targetValue.Kind() == reflect.Ptr && isPrimitiveType(targetValue.Elem().Kind())) {
+		if !rows.Next() {
+			return errors.New("no rows found")
+		}
+
+		var value interface{}
+		switch targetValue.Kind() {
+		case reflect.Ptr:
+			value = reflect.New(targetValue.Elem().Type()).Interface()
+		default:
+			value = reflect.New(targetValue.Type()).Interface()
+		}
+
+		if err := rows.Scan(value); err != nil {
+			return err
+		}
+
+		if targetValue.Kind() == reflect.Ptr {
+			targetValue.Set(reflect.ValueOf(value))
+		} else {
+			targetValue.Set(reflect.ValueOf(value).Elem())
+		}
+		return nil
+	}
 
 	if targetValue.Kind() == reflect.Struct ||
 		(targetValue.Kind() == reflect.Ptr && targetValue.Elem().Kind() == reflect.Struct) ||
@@ -138,4 +171,14 @@ func MapRowsToSliceModel(rows *sql.Rows, model interface{}, modelType reflect.Ty
 		targetValue.Set(reflect.Append(targetValue, elem.Elem()))
 	}
 	return nil
+}
+
+// isPrimitiveType checks if a type is a primitive Go type.
+func isPrimitiveType(kind reflect.Kind) bool {
+	switch kind {
+	case reflect.Int, reflect.String, reflect.Bool, reflect.Float32, reflect.Float64:
+		return true
+	default:
+		return false
+	}
 }

@@ -138,5 +138,57 @@ func TestRaw_AggregateFunctions(t *testing.T) {
 	err = newDurazzo.Raw(`INSERT INTO user (name, email) VALUES ($1, $2)`, "kris", "kris@yahoo.com").Run()
 	assert.Nil(t, err)
 
+	// Raw COUNT query
+
+	var count int
+	err = newDurazzo.Raw(`SELECT COUNT(*) FROM user WHERE email LIKE $1`, "%@gmail.com").Model(&count).Run()
+	assert.Nil(t, err)
+	assert.Equal(t, 2, count)
+
+	// Raw AVG query (example)
+	//var avgAge float64
+	//err = newDurazzo.Raw(`SELECT AVG(age) FROM user`).Model(&avgAge).Run()
+	//assert.Nil(t, err)
+	//
+	//assert.Equal(t, 0.0, avgAge)
+
+	tearDownDatabase(t, newDurazzo)
+}
+
+func TestRaw_ComplexJoinQuery(t *testing.T) {
+	newDurazzo := setupDatabase(t)
+
+	// Insert user data
+	err := newDurazzo.Raw(`INSERT INTO user (name, email) VALUES ($1, $2)`, "edgar", "edgar@gmail.com").Run()
+	assert.Nil(t, err)
+	err = newDurazzo.Raw(`INSERT INTO user (name, email) VALUES ($1, $2)`, "ermelinda", "ermelinda@gmail.com").Run()
+	assert.Nil(t, err)
+
+	// Insert post data
+	err = newDurazzo.Raw(`INSERT INTO post (title, body, userid) VALUES ($1, $2, $3)`, "Post 1", "Body of post 1", 1).Run()
+	assert.Nil(t, err)
+	err = newDurazzo.Raw(`INSERT INTO post (title, body, userid) VALUES ($1, $2, $3)`, "Post 2", "Body of post 2", 2).Run()
+	assert.Nil(t, err)
+
+	type result struct {
+		UserName  string
+		PostTitle string
+	}
+
+	var results []result
+	err = newDurazzo.Raw(`
+		SELECT u.name AS UserName, p.title AS PostTitle
+		FROM user u
+		LEFT JOIN post p ON u.id = p.userid
+		WHERE u.email LIKE $1
+		ORDER BY u.id DESC
+	`, "%@gmail.com").Model(&results).Run()
+	assert.Nil(t, err)
+	assert.Equal(t, 2, len(results))
+	assert.Equal(t, "ermelinda", results[0].UserName)
+	assert.Equal(t, "Post 2", results[0].PostTitle)
+	assert.Equal(t, "edgar", results[1].UserName)
+	assert.Equal(t, "Post 1", results[1].PostTitle)
+
 	tearDownDatabase(t, newDurazzo)
 }

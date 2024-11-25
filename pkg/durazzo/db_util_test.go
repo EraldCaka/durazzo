@@ -27,4 +27,7 @@ func tearDownDatabase(t *testing.T, d *durazzo.Durazzo) {
 	dropTableQuery := `DROP TABLE IF EXISTS "user"`
 	_, err := d.Db.Exec(dropTableQuery)
 	assert.Nil(t, err)
+	dropTableQueryPost := `DROP TABLE IF EXISTS "post"`
+	_, err = d.Db.Exec(dropTableQueryPost)
+	assert.Nil(t, err)
 }
